@@ -12,7 +12,7 @@ from job_filter import JobFilter
 class AIJobFinder:
     """Main agent that orchestrates the job search."""
     
-    def __init__(self, api_key=None):
+    def __init__(self, api_key=None, sources: str | None = None):
         """
         Initialize the AI Job Finder.
         
@@ -20,7 +20,11 @@ class AIJobFinder:
             api_key: OpenAI API key (optional)
         """
         self.parser = JobQueryParser(api_key=api_key)
-        self.aggregator = JobAggregator()
+        # Parse sources string like "linkedin,greenhouse" into list
+        enabled_sources = None
+        if sources:
+            enabled_sources = [s.strip().lower() for s in sources.split(",") if s.strip()]
+        self.aggregator = JobAggregator(enabled_sources)
         self.filter = JobFilter()
     
     def search(self, query: str, output_format: str = "cli") -> list:
@@ -144,11 +148,19 @@ Examples:
         "--api-key",
         help="OpenAI API key (can also use OPENAI_API_KEY env var)"
     )
+
+    parser.add_argument(
+        "--sources",
+        help=(
+            "Comma-separated sources to use: linkedin,greenhouse,lever,workable. "
+            "Default: greenhouse,lever,workable. Example: --sources linkedin"
+        )
+    )
     
     args = parser.parse_args()
     
     try:
-        finder = AIJobFinder(api_key=args.api_key)
+        finder = AIJobFinder(api_key=args.api_key, sources=args.sources)
         finder.search(args.query, output_format=args.format)
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)

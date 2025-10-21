@@ -4,6 +4,7 @@ Job sources module to query public job boards.
 
 import requests
 import time
+import os
 from typing import List, Dict
 
 
@@ -181,13 +182,44 @@ class WorkableSource(JobSource):
 class JobAggregator:
     """Aggregate jobs from multiple sources."""
     
-    def __init__(self):
-        """Initialize all job sources."""
-        self.sources = [
-            GreenhouseSource(),
-            LeverSource(),
-            WorkableSource()
-        ]
+    def __init__(self, enabled_sources: List[str] | None = None):
+        """Initialize job sources.
+
+        Args:
+            enabled_sources: Optional list of source names to enable. Supported values:
+                - "greenhouse"
+                - "lever"
+                - "workable"
+                - "linkedin" (via SerpAPI)
+
+            If None, defaults to [greenhouse, lever, workable].
+        """
+
+        # Define all available sources (lazy to avoid requiring extra API keys by default)
+        source_factories = {
+            "greenhouse": lambda: GreenhouseSource(),
+            "lever": lambda: LeverSource(),
+            "workable": lambda: WorkableSource(),
+            # LinkedIn via SerpAPI (optional)
+            "linkedin": lambda: LinkedInSerpSource(api_key=os.getenv("SERPAPI_API_KEY"))
+        }
+
+        default = ["greenhouse", "lever", "workable"]
+        names = enabled_sources or default
+
+        self.sources = []
+        for name in names:
+            if name not in source_factories:
+                print(f"Warning: Unknown source '{name}' - skipping")
+                continue
+            try:
+                src = source_factories[name]()
+                # If a source returns None (e.g., missing API key), skip it
+                if src is not None:
+                    self.sources.append(src)
+            except Exception as e:
+                print(f"Error initializing source '{name}': {e}")
+                continue
     
     def search_all_sources(self, filters: Dict) -> List[Dict]:
         """
@@ -210,3 +242,95 @@ class JobAggregator:
                 continue
         
         return all_jobs
+
+
+class LinkedInSerpSource(JobSource):
+    """Query LinkedIn job postings via SerpAPI's Google Jobs engine.
+
+    Notes:
+        - Requires SERPAPI_API_KEY environment variable.
+        - We only return results that include a LinkedIn apply option to ensure
+          LinkedIn is the actual application source.
+    """
+
+    def __init__(self, api_key: str | None = None):
+        self.api_key = api_key
+        if not self.api_key:
+            # Gracefully disable this source if no API key is present
+            print("Info: SERPAPI_API_KEY not set; LinkedIn source disabled.")
+            # Indicate disabled by setting a flag
+            self.disabled = True
+        else:
+            self.disabled = False
+
+    def search_jobs(self, filters: Dict) -> List[Dict]:
+        if getattr(self, 'disabled', False):
+            return []
+
+        # Build a query from filters: role + location + optional keywords
+        role = (filters.get("role") or "").strip()
+        location = (filters.get("location") or "").strip()
+        keywords = filters.get("keywords") or []
+
+        parts = []
+        if role:
+            parts.append(role)
+        if location:
+            parts.append(f"in {location}")
+        if keywords:
+            parts.extend(keywords)
+        q = " ".join(parts).strip() or "jobs"
+
+        url = "https://serpapi.com/search.json"
+        params = {
+            "engine": "google_jobs",
+            "q": q,
+            "hl": "en",
+            "api_key": self.api_key
+        }
+
+        try:
+            resp = requests.get(url, params=params, timeout=20)
+            resp.raise_for_status()
+            data = resp.json()
+
+            jobs_results = data.get("jobs_results", [])
+            results: List[Dict] = []
+
+            for j in jobs_results:
+                # Filter to those with LinkedIn apply option
+                apply_options = j.get("apply_options") or []
+                linkedin_apply = None
+                for opt in apply_options:
+                    link = opt.get("link", "")
+                    title = (opt.get("title") or "").lower()
+                    if "linkedin.com" in link or "linkedin" in title:
+                        linkedin_apply = opt
+                        break
+
+                if not linkedin_apply:
+                    continue
+
+                title = j.get("title", "")
+                company = j.get("company_name", "")
+                location_str = j.get("location", "")
+                url_apply = linkedin_apply.get("link", "")
+                description = j.get("description") or ""
+
+                results.append({
+                    "id": f"linkedin_serp_{hash(url_apply)}",
+                    "title": title,
+                    "company": company,
+                    "location": location_str,
+                    "url": url_apply,
+                    "source": "LinkedIn (via SerpAPI)",
+                    "description": description
+                })
+
+            # Rate limit friendly delay
+            time.sleep(0.25)
+            return results
+
+        except Exception as e:
+            print(f"Error fetching from LinkedIn (SerpAPI): {e}")
+            return []

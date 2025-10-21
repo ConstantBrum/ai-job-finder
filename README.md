@@ -4,8 +4,8 @@ An intelligent Python-based AI agent that searches for jobs across multiple publ
 
 ## Features
 
-- **Natural Language Processing**: Uses OpenAI API to parse job search queries like "nurse in Utrecht, no Dutch required"
-- **Multi-Source Search**: Queries public job boards (Greenhouse, Lever, Workable)
+- **Natural Language Processing**: Uses OpenAI API to parse job search queries like "nurse in Utrecht, no Dutch required" (with a built-in local fallback if OpenAI is unavailable)
+- **Multi-Source Search**: Queries public job boards (Greenhouse, Lever, Workable). Optional LinkedIn integration via SerpAPI.
 - **Smart Filtering**: Automatically filters by role, location, language requirements, salary, remote work, etc.
 - **Language Exclusion**: Excludes jobs requiring specific languages (e.g., "no Dutch required")
 - **Deduplication**: Removes duplicate job listings
@@ -25,7 +25,7 @@ cd ai-job-finder
 pip install -r requirements.txt
 ```
 
-3. Set up your OpenAI API key:
+3. (Optional) Set up your OpenAI API key:
 ```bash
 # Option 1: Environment variable
 export OPENAI_API_KEY='your-api-key-here'
@@ -33,6 +33,11 @@ export OPENAI_API_KEY='your-api-key-here'
 # Option 2: Create .env file
 cp .env.example .env
 # Edit .env and add your API key
+```
+
+4. (Optional) To enable LinkedIn via SerpAPI, set your SerpAPI key:
+```bash
+export SERPAPI_API_KEY='your-serpapi-key'
 ```
 
 ## Usage
@@ -57,6 +62,18 @@ python agent.py "data scientist with Python experience, minimum 80k salary"
 python agent.py "product manager in Berlin" --format json
 ```
 
+### Use LinkedIn as the Only Source (Optional)
+
+You can restrict the search to LinkedIn postings (via SerpAPI's Google Jobs engine):
+
+```bash
+python agent.py "nurse in Utrecht" --sources linkedin
+```
+
+Notes:
+- Requires the environment variable `SERPAPI_API_KEY`.
+- We only return results that include a LinkedIn apply option, ensuring LinkedIn is the application source.
+
 ### Python API
 
 You can also use the agent programmatically:
@@ -79,12 +96,13 @@ for job in jobs:
 
 ## How It Works
 
-1. **Query Parsing**: The natural language query is sent to OpenAI's GPT model which extracts structured filters (role, location, language requirements, etc.)
+1. **Query Parsing**: The natural language query is sent to OpenAI's GPT model which extracts structured filters (role, location, language requirements, etc.). If the OpenAI API is unavailable, a local heuristic parser is used.
 
 2. **Job Fetching**: The agent queries multiple public job board APIs:
    - Greenhouse boards (airbnb, gitlab, doordash, etc.)
    - Lever boards (netflix, spotify, databricks, etc.)
-   - Workable boards (various companies)
+    - Workable boards (various companies)
+    - Optional: LinkedIn via SerpAPI (Google Jobs engine), when enabled
 
 3. **Filtering**: Jobs are filtered based on:
    - Job title/role matching
@@ -177,8 +195,9 @@ lever_companies = [
 ## Requirements
 
 - Python 3.7+
-- OpenAI API key
 - Internet connection
+- Optional: OpenAI API key (recommended for best parsing quality)
+- Optional: SerpAPI API key to enable the LinkedIn source
 
 ## License
 

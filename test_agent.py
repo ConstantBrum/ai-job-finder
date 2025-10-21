@@ -132,14 +132,18 @@ class TestOpenAIParser(unittest.TestCase):
         
         parser = JobQueryParser(api_key="test-key")
         self.assertEqual(parser.api_key, "test-key")
-    
-    def test_parser_requires_api_key(self):
-        """Test parser raises error without API key."""
+
+    def test_parser_initializes_without_api_key(self):
+        """Parser should initialize without API key and use local fallback."""
         from openai_parser import JobQueryParser
-        
         with patch.dict('os.environ', {}, clear=True):
-            with self.assertRaises(ValueError):
-                JobQueryParser()
+            parser = JobQueryParser()
+            # Without API key, client should be None and parse_query should still return heuristics
+            self.assertIsNone(getattr(parser, 'client', None))
+            filters = parser.parse_query("nurse in Utrecht, no Dutch required")
+            self.assertEqual(filters.get("role"), "Nurse")
+            self.assertEqual(filters.get("location"), "Utrecht")
+            self.assertIn("Dutch", filters.get("exclude_language", []))
     
     @patch('openai_parser.OpenAI')
     def test_parse_query(self, mock_openai_class):
