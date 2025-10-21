@@ -5,7 +5,8 @@ An intelligent Python-based AI agent that searches for jobs across multiple publ
 ## Features
 
 - **Natural Language Processing**: Uses OpenAI API to parse job search queries like "nurse in Utrecht, no Dutch required"
-- **Multi-Source Search**: Queries public job boards (Greenhouse, Lever, Workable)
+- **Multi-Source Search**: Queries public job boards (Greenhouse, Lever, Workable) and Google Jobs
+- **Google Jobs Integration**: Search through Google's job listings for comprehensive results (optional, requires SerpApi key)
 - **Smart Filtering**: Automatically filters by role, location, language requirements, salary, remote work, etc.
 - **Language Exclusion**: Excludes jobs requiring specific languages (e.g., "no Dutch required")
 - **Deduplication**: Removes duplicate job listings
@@ -25,15 +26,20 @@ cd ai-job-finder
 pip install -r requirements.txt
 ```
 
-3. Set up your OpenAI API key:
+3. Set up your API keys:
 ```bash
-# Option 1: Environment variable
-export OPENAI_API_KEY='your-api-key-here'
+# Option 1: Environment variables
+export OPENAI_API_KEY='your-openai-api-key-here'
+export SERPAPI_API_KEY='your-serpapi-api-key-here'  # Optional, for Google Jobs
 
 # Option 2: Create .env file
 cp .env.example .env
-# Edit .env and add your API key
+# Edit .env and add your API keys
 ```
+
+**API Keys:**
+- **OpenAI API Key** (Required): Get from https://platform.openai.com/api-keys
+- **SerpApi API Key** (Optional): Get from https://serpapi.com/ - Free tier includes 100 searches/month for Google Jobs integration
 
 ## Usage
 
@@ -81,10 +87,11 @@ for job in jobs:
 
 1. **Query Parsing**: The natural language query is sent to OpenAI's GPT model which extracts structured filters (role, location, language requirements, etc.)
 
-2. **Job Fetching**: The agent queries multiple public job board APIs:
-   - Greenhouse boards (airbnb, gitlab, doordash, etc.)
-   - Lever boards (netflix, spotify, databricks, etc.)
-   - Workable boards (various companies)
+2. **Job Fetching**: The agent queries multiple job sources:
+   - **Google Jobs** (via SerpApi): Comprehensive job search across the web
+   - **Greenhouse boards**: airbnb, gitlab, doordash, etc.
+   - **Lever boards**: netflix, spotify, databricks, etc.
+   - **Workable boards**: various companies
 
 3. **Filtering**: Jobs are filtered based on:
    - Job title/role matching
@@ -167,10 +174,32 @@ lever_companies = [
 ]
 ```
 
+## Google Jobs Integration
+
+The Google Jobs integration provides access to millions of job listings across the web. It uses SerpApi to programmatically search Google Jobs.
+
+### Setup
+1. Sign up for a free SerpApi account at https://serpapi.com/
+2. Get your API key from the dashboard
+3. Add it to your `.env` file:
+   ```
+   SERPAPI_API_KEY=your_serpapi_api_key_here
+   ```
+
+### Features
+- Searches across all job boards indexed by Google
+- Finds jobs from company websites, job boards, and aggregators
+- Free tier includes 100 searches per month
+- Automatically enabled when API key is present
+
+### Disabling Google Jobs
+If you don't want to use Google Jobs (e.g., to avoid API costs), simply don't set the `SERPAPI_API_KEY`. The system will work with other job sources only.
+
 ## Limitations
 
 - **API Dependencies**: Relies on public APIs which may change or have rate limits
-- **Company Coverage**: Only searches companies explicitly configured in the source lists
+- **Company Coverage**: Traditional sources (Greenhouse, Lever, Workable) only search companies explicitly configured in the source lists
+- **Google Jobs Rate Limits**: Free SerpApi tier limited to 100 searches/month
 - **Language Detection**: Language requirement detection is pattern-based and may not catch all variations
 - **OpenAI Costs**: Each query uses OpenAI API credits (typically a few cents per query)
 
