@@ -1,0 +1,17 @@
+[project]
+name = "ai-job-finder"
+version = "0.1.0"
+description = "Run CUA-powered job searches with advanced filters"
+authors = [{ name = "AI Assistant" }]
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+    "PyYAML>=6.0",
+]
+
+[project.scripts]
+ai-job-finder = "ai_job_finder.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
