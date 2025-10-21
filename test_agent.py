@@ -88,7 +88,20 @@ class TestJobSources(unittest.TestCase):
         """Test job aggregator initializes all sources."""
         aggregator = JobAggregator()
         
-        self.assertEqual(len(aggregator.sources), 3)
+        # Should have 3 base sources (Greenhouse, Lever, Workable)
+        # Google Jobs is only added if API key is present
+        self.assertGreaterEqual(len(aggregator.sources), 3)
+    
+    def test_google_jobs_without_api_key(self):
+        """Test Google Jobs source without API key."""
+        from job_sources import GoogleJobsSource
+        
+        source = GoogleJobsSource()
+        self.assertFalse(source.enabled)
+        
+        # Should return empty list when disabled
+        jobs = source.search_jobs({"role": "engineer"})
+        self.assertEqual(len(jobs), 0)
     
     @patch('job_sources.requests.get')
     def test_greenhouse_search(self, mock_get):
