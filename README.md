@@ -176,24 +176,26 @@ lever_companies = [
 
 ## Google Jobs Integration
 
-The Google Jobs integration provides access to millions of job listings across the web. It uses SerpApi to programmatically search Google Jobs.
+The Google Jobs integration provides access to millions of job listings across the web using [SerpApi](https://serpapi.com/).
 
-### Setup
-1. Sign up for a free SerpApi account at https://serpapi.com/
-2. Get your API key from the dashboard
-3. Add it to your `.env` file:
-   ```
-   SERPAPI_API_KEY=your_serpapi_api_key_here
-   ```
+**Quick Setup:**
+1. Sign up for free at https://serpapi.com/ (100 searches/month)
+2. Get your API key
+3. Set it: `export SERPAPI_API_KEY='your_key_here'`
 
-### Features
-- Searches across all job boards indexed by Google
+**Features:**
+- Search across all job boards indexed by Google
 - Finds jobs from company websites, job boards, and aggregators
-- Free tier includes 100 searches per month
 - Automatically enabled when API key is present
+- Optional - system works without it
 
-### Disabling Google Jobs
-If you don't want to use Google Jobs (e.g., to avoid API costs), simply don't set the `SERPAPI_API_KEY`. The system will work with other job sources only.
+**Detailed Setup:** See [GOOGLE_JOBS_SETUP.md](GOOGLE_JOBS_SETUP.md) for complete instructions.
+
+**Example:**
+```bash
+# Run the example
+python example_google_jobs.py
+```
 
 ## Limitations
 
