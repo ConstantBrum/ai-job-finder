@@ -1,0 +1,41 @@
+# Example config for running against a local/self-hosted CUA instance.
+# Replace base_url with your local CUA server URL and set CUA_API_KEY in your env.
+
+cua:
+  base_url: "http://localhost:8000/api/v1"  # <-- change to your local CUA server URL
+  api_key: "${CUA_API_KEY}"
+  workspace_id: null
+  persona_id: null
+  poll_interval: 2.0
+  timeout_seconds: 240.0
+
+preferences:
+  roles: ["nurse"]
+  industries: ["healthcare"]
+  seniority: "mid"
+  locations: ["Utrecht"]
+  remote_ok: true
+  onsite_ok: true
+  hybrid_ok: true
+  keywords_include: ["patient care"]
+  keywords_exclude: ["unpaid", "internship"]
+  languages_required: ["English"]
+  languages_forbidden: ["Dutch"]
+  salary_min_eur: 32000
+  employment_type: "full-time"
+  schedule_prefs: []
+  company_include: []
+  company_exclude: []
+
+# Optional: if your local CUA computer is configured to login to specific sites,
+# you can include login profiles here. Use environment variables for secrets.
+logins:
+  - site_name: LinkedIn
+    login_url: https://www.linkedin.com/login
+    credential:
+      name: linkedin-default
+      username: your-email@example.com
+      password: "${LINKEDIN_PASSWORD}"
+      totp_secret: null
+    post_login_urls:
+      - https://www.linkedin.com/jobs/

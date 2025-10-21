@@ -1,0 +1,30 @@
+version: "3.9"
+
+# Compose template to run a local CUA computer/server.
+# NOTE:
+# - You must provide a valid container image for the CUA computer via CUA_IMAGE in .env.
+#   Refer to the official CUA documentation for the correct image and internal port.
+# - Exposed ports and environment variables may vary depending on the CUA image you use.
+# - This file does NOT automate any third-party logins; it only starts the local CUA service.
+
+services:
+  cua:
+    image: ${CUA_IMAGE}
+    container_name: cua-computer
+    env_file:
+      - .env
+    environment:
+      # Required: API key for your local CUA server (if applicable)
+      - CUA_API_KEY=${CUA_API_KEY}
+      # Optional: Workspace control (depends on your server configuration)
+      - CUA_WORKSPACE_ID=${CUA_WORKSPACE_ID}
+    ports:
+      # Map host port to container internal port. Adjust INTERNAL_PORT to match the image.
+      - "${CUA_PORT:-8000}:${CUA_INTERNAL_PORT:-8000}"
+    volumes:
+      # Persist state, logs, or any data directories used by your image
+      - cua_data:/data
+    restart: unless-stopped
+
+volumes:
+  cua_data: {}

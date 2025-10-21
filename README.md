@@ -47,6 +47,65 @@ the search.
    and wait for completion. When finished the summary (if provided) is printed and the raw response
    is persisted to `session.json`.
 
+   ### Running against a local/self-hosted CUA instance
+
+   You don't have to use the hosted CUA service. If you set up a CUA computer/server locally (Windows Sandbox, Docker, macOS, or host desktop), simply point this tool to it by changing the `cua.base_url` in your config and providing the corresponding API key.
+
+   - CUA Quickstart for local options: https://docs.cua.ai/docs/quickstart-devs
+   - Sample local config: `example.local.config.yaml` (replace the base_url with your local CUA server URL)
+
+   PowerShell example on Windows:
+
+   ```powershell
+   # 1) Start your local CUA computer/server; note the API base URL and API key
+   # 2) Provide the API key as an environment variable
+   $env:CUA_API_KEY = "your-local-cua-api-key"
+
+   # 3) Edit example.local.config.yaml and set:
+   # cua.base_url: http://localhost:8000/api/v1   # (or whatever your server shows)
+
+   # 4) Dry-run to preview prompts
+   ai-job-finder example.local.config.yaml --dry-run
+
+   # 5) Run the session for real (calls your local CUA server)
+   ai-job-finder example.local.config.yaml --output session.json
+   ```
+
+### Run a local CUA computer with Docker
+
+This repository includes a Docker Compose template to start a local CUA computer/server. You must provide the correct container image reference from the official CUA documentation.
+
+1. Create a `.env` file from the template and edit values:
+
+   ```powershell
+   Copy-Item .env.example .env
+   notepad .env
+   ```
+
+   Set at least:
+   - `CUA_IMAGE` to the official CUA computer/server image
+   - `CUA_API_KEY` if your image requires one
+   - `CUA_PORT` (host) and `CUA_INTERNAL_PORT` (container) if different from 8000
+
+2. Start the container:
+
+   ```powershell
+   docker compose -f docker-compose.cua.yml up -d
+   ```
+
+3. Point your config to the local server (example):
+
+   - Set `cua.base_url` in your YAML to `http://localhost:8000/api/v1` (replace the port if you changed `CUA_PORT`).
+   - Ensure your `CUA_API_KEY` is available to the CLI via environment variables (e.g., `$env:CUA_API_KEY`).
+
+4. Run a dry-run to verify:
+
+   ```powershell
+   ai-job-finder example.local.config.yaml --dry-run
+   ```
+
+Refer to the CUA Quickstart for exact image names and additional configuration: https://docs.cua.ai/docs/quickstart-devs
+
 ## Configuration reference
 
 The YAML configuration file has three top-level keys:
