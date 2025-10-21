@@ -1,0 +1,10 @@
+{
+  "goal": "Find remote senior developer positions",
+  "filters": {
+    "keywords": "senior developer",
+    "remote": "remote",
+    "experienceLevel": "senior",
+    "datePosted": "past 24 hours",
+    "easyApply": true
+  }
+}

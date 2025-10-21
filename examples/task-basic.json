@@ -1,0 +1,12 @@
+{
+  "goal": "Find software engineering jobs in San Francisco",
+  "filters": {
+    "keywords": "software engineer",
+    "location": "San Francisco, CA",
+    "jobType": "full-time",
+    "experienceLevel": "mid",
+    "remote": "hybrid",
+    "datePosted": "past week",
+    "easyApply": false
+  }
+}

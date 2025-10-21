@@ -1,0 +1,8 @@
+{
+  "goal": "Find entry-level positions for recent graduates",
+  "filters": {
+    "keywords": "entry level developer",
+    "experienceLevel": "entry",
+    "datePosted": "past week"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ai-job-finder",
+  "version": "1.0.0",
+  "description": "AI-powered LinkedIn job finder agent that operates via computer-control API for safe, local job searching",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": ["linkedin", "jobs", "automation", "agent", "computer-control"],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
